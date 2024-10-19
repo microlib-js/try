@@ -1,0 +1,14 @@
+# Dependency directories
+node_modules/
+
+# Environment files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# Output files
+dist
+out
+

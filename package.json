@@ -1,0 +1,56 @@
+{
+  "name": "@microlib/try",
+  "version": "0.0.0",
+  "description": "Easily convert promise to result",
+  "keywords": [
+    "promise",
+    "try",
+    "result"
+  ],
+  "type": "module",
+  "module": "src/index.ts",
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "unbuild",
+    "bump": "bun scripts/bump.ts",
+    "release": "bun scripts/release.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.1.11",
+    "unbuild": "^2.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.6.3"
+  },
+  "author": {
+    "name": "tanishqmanuja",
+    "url": "https://github.com/tanishqmanuja",
+    "email": "tanishqmanuja@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/microlib-js/try.git"
+  },
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./result": {
+      "require": "./dist/result.cjs",
+      "import": "./dist/result.mjs",
+      "types": "./dist/result.d.ts"
+    },
+    "./utils": {
+      "require": "./dist/utils.cjs",
+      "import": "./dist/utils.mjs",
+      "types": "./dist/utils.d.ts"
+    },
+    "./package.json": "./package.json"
+  }
+}
