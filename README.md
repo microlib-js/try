@@ -2,7 +2,7 @@
 
 Easily convert promises or lazy synchronous functions to result
 
-### 🚀 Installation
+## 🚀 Installation
 
 ```bash
 npm install @microlib/try
@@ -12,7 +12,7 @@ npm install @microlib/try
 bun add @microlib/try
 ```
 
-### 📖 Usage
+## 📖 Usage
 
 ```ts
 import { Try } from "@microlib/try";
@@ -44,8 +44,9 @@ console.log(resultAsync);
 /* 
 
 Output can be any of these:
+
 { ok: true, value: "Success" }
-OR
+           or
 { ok: false, error: Error: Something went wrong }
 
 */
