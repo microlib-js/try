@@ -5,7 +5,7 @@
 [![Github Actions][github-actions-src]][github-actions-href]
 [![Bundlephobia][bundlephobia-src]][bundlephobia-href]
 
-Easily convert promises or lazy synchronous functions to result
+A Promise like quasi monad but for Try.
 
 ## 🚀 Installation
 
@@ -22,37 +22,26 @@ bun add @microlib/try
 ```ts
 import { Try } from "@microlib/try";
 
-function myTaskSync() {
+function task() {
   if (Math.random() > 0.5) {
     throw new Error("Something went wrong");
   } else {
-    return "Success";
+    return "Hello";
   }
 }
 
-function myTaskAsync() {
-  return new Promise((resolve, reject) => {
-    if (Math.random() > 0.5) {
-      reject(new Error("Something went wrong"));
-    } else {
-      resolve("Success");
-    }
-  });
-}
+const result = Try(task)
+  .catch(() => "Bye")
+  .then((v) => v + ", World!")
+  .unwrap();
 
-const resultSync = Try(myTaskSync);
-const resultAsync = await Try(myTaskAsync);
-
-console.log(resultSync);
-console.log(resultAsync);
+console.log(result);
 
 /* 
 
 Output can be any of these:
-
-{ ok: true, value: "Success" }
-           or
-{ ok: false, error: Error: Something went wrong }
+- Hello, World!
+- Bye, World!
 
 */
 ```

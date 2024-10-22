@@ -1,11 +1,11 @@
 {
   "name": "@microlib/try",
   "version": "1.0.0",
-  "description": "Easily convert promise to result",
+  "description": "A Promise like quasi monad for Try.",
   "keywords": [
     "promise",
     "try",
-    "result"
+    "monad"
   ],
   "type": "module",
   "module": "src/index.ts",
@@ -17,7 +17,8 @@
   "scripts": {
     "build": "unbuild",
     "bump": "bun scripts/bump.ts",
-    "release": "bun scripts/release.ts"
+    "release": "bun scripts/release.ts",
+    "attw": "bunx @arethetypeswrong/cli --pack"
   },
   "devDependencies": {
     "@types/bun": "^1.1.11",
@@ -41,15 +42,10 @@
       "import": "./dist/index.mjs",
       "types": "./dist/index.d.ts"
     },
-    "./result": {
-      "require": "./dist/result.cjs",
-      "import": "./dist/result.mjs",
-      "types": "./dist/result.d.ts"
-    },
-    "./utils": {
-      "require": "./dist/utils.cjs",
-      "import": "./dist/utils.mjs",
-      "types": "./dist/utils.d.ts"
+    "./interop": {
+      "require": "./dist/interop.cjs",
+      "import": "./dist/interop.mjs",
+      "types": "./dist/interop.d.ts"
     },
     "./package.json": "./package.json"
   }
