@@ -3,6 +3,7 @@ interface ITry<A> {
   then<B = A>(onsuccess: (value: A) => B | Try<B>): Try<B>;
   catch<B = never>(onfailure: (reason: unknown) => B | Try<B>): Try<A | B>;
   unwrap(): A;
+  result(): Result<A>;
 }
 
 class Success<A> implements ITry<A> {
@@ -32,6 +33,10 @@ class Success<A> implements ITry<A> {
   unwrap(): A {
     return this.value;
   }
+
+  result(): Result<A> {
+    return { ok: true, value: this.value };
+  }
 }
 
 class Failure<A> implements ITry<A> {
@@ -60,6 +65,10 @@ class Failure<A> implements ITry<A> {
 
   unwrap(): A {
     throw this.error;
+  }
+
+  result(): Result<A> {
+    return { ok: false, error: this.error };
   }
 }
 
@@ -106,3 +115,16 @@ export namespace Try {
     return value instanceof Success || value instanceof Failure;
   }
 }
+
+/* Result Types */
+type ResultOk<T> = {
+  ok: true;
+  value: T;
+};
+
+type ResultError<E = unknown> = {
+  ok: false;
+  error: E;
+};
+
+export type Result<T, E = unknown> = ResultOk<T> | ResultError<E>;
