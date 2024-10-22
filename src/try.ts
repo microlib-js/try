@@ -37,7 +37,7 @@ class Success<A> implements ITry<A> {
 class Failure<A> implements ITry<A> {
   readonly ok = false;
 
-  constructor(readonly value: unknown) {
+  constructor(readonly error: unknown) {
     return this;
   }
 
@@ -47,7 +47,7 @@ class Failure<A> implements ITry<A> {
 
   catch<B = never>(onfailure: (reason: unknown) => B | Try<B>): Try<A | B> {
     try {
-      const next = onfailure(this.value);
+      const next = onfailure(this.error);
       if (Try.isTry(next)) {
         return next;
       } else {
@@ -59,7 +59,7 @@ class Failure<A> implements ITry<A> {
   }
 
   unwrap(): A {
-    throw this.value;
+    throw this.error;
   }
 }
 
