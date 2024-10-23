@@ -13,6 +13,10 @@ class Success<A> implements ITry<A> {
     return this;
   }
 
+  get [Symbol.toStringTag]() {
+    return "Try";
+  }
+
   then<B = A>(onsuccess: (value: A) => B | Try<B>): Try<B> {
     try {
       const next = onsuccess(this.value);
@@ -44,6 +48,10 @@ class Failure<A> implements ITry<A> {
 
   constructor(readonly error: unknown) {
     return this;
+  }
+
+  get [Symbol.toStringTag]() {
+    return "Try";
   }
 
   then<B = A>(onsuccess: (value: A) => B | Try<B>): Try<B> {
