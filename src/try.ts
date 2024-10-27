@@ -83,11 +83,7 @@ class Failure<A> implements ITry<A> {
 export type Try<A> = Success<A> | Failure<A>;
 export type Unwrapped<A> = A extends Try<infer B> ? Unwrapped<B> : A;
 
-export function Try<A>(value: () => A): Try<A> {
-  return Try.apply(value);
-}
-
-export namespace Try {
+export namespace TryImplementation {
   export function apply<A>(value: () => A): Try<A> {
     try {
       return new Success<A>(value());
@@ -123,6 +119,22 @@ export namespace Try {
     return value instanceof Success || value instanceof Failure;
   }
 }
+
+export interface TryConstructor {
+  <A>(value: () => A): Try<A>;
+  new <A>(value: () => A): Try<A>;
+
+  apply<A>(value: () => A): Try<A>;
+  success<A>(value: A | Try<A>): Try<Unwrapped<A>>;
+  failure<A = never>(reason: unknown): Try<A>;
+  isOk(value: unknown): value is Success<unknown>;
+  isError(value: unknown): value is Failure<unknown>;
+  isTry(value: unknown): value is Try<unknown>;
+}
+
+export const Try = Object.assign(function <A>(value: () => A): Try<A> {
+  return TryImplementation.apply(value);
+}, TryImplementation satisfies Omit<TryConstructor, never>) as TryConstructor;
 
 /* Result Types */
 type ResultOk<T> = {
