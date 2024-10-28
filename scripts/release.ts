@@ -1,18 +1,37 @@
 import { $ } from "bun";
+import { parseArgs } from "util";
 
 import { version } from "../package.json";
 
-const WORKFLOW_ID = "release.yaml";
+const { values, positionals } = parseArgs({
+  args: Bun.argv,
+  options: {
+    dry: {
+      type: "boolean",
+      default: false,
+    },
+    workflow: {
+      type: "string",
+      default: "release.yaml",
+    },
+  },
+  strict: true,
+  allowPositionals: true,
+});
 
-const bump = process.argv[2] ?? "patch";
-const dryRun = process.argv.includes("--dry-run");
+console.log(positionals, values);
+
+const bump = positionals[2] ?? "patch";
+const workflowId = values.workflow ?? "release.yaml";
+const isDryRun = values.dry;
 
 if (!bump) {
   console.error("Missing bump");
   process.exit(1);
 }
 
-if (!["patch", "minor", "major"].includes(bump)) {
+const BUMP_TYPES = ["major", "minor", "patch"];
+if (!BUMP_TYPES.includes(bump)) {
   console.error("Invalid bump");
   process.exit(1);
 }
@@ -33,18 +52,25 @@ const { owner, repo } = await $`git config --get remote.origin.url`
     return { owner, repo };
   });
 
+console.log(`Repo: ${owner}/${repo}`);
 console.log(`Current Version: ${version}`);
 console.log(`Bump Type: ${bump}`);
-console.log(`Repo: ${owner}/${repo}`);
 
-if (dryRun) {
+const nextVersion = version
+  .split(".")
+  .map((v, i) => (i === BUMP_TYPES.indexOf(bump) ? String(Number(v) + 1) : v))
+  .join(".");
+
+console.log(`Next Version: ${nextVersion}`);
+
+if (isDryRun) {
   process.exit(0);
 }
 
 console.log("\nDispatching workflow...");
 
 await $`gh api --method POST -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" \
-  /repos/${owner}/${repo}/actions/workflows/${WORKFLOW_ID}/dispatches -f "ref=main" -f "inputs[bump]=${bump}"`
+  /repos/${owner}/${repo}/actions/workflows/${workflowId}/dispatches -f "ref=main" -f "inputs[bump]=${bump}"`
   .quiet()
   .then(() => {
     console.log("Dispatched!");
