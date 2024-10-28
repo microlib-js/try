@@ -9,7 +9,7 @@ interface ITry<A> {
   readonly [Symbol.toStringTag]: string;
 }
 
-class Success<A> implements ITry<A> {
+export class Success<A> implements ITry<A> {
   readonly ok = true;
 
   constructor(readonly value: A) {
@@ -46,7 +46,7 @@ class Success<A> implements ITry<A> {
   }
 }
 
-class Failure<A> implements ITry<A> {
+export class Failure<A> implements ITry<A> {
   readonly ok = false;
 
   constructor(readonly error: unknown) {
