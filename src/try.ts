@@ -3,11 +3,15 @@ interface ITry<A> {
 
   then<B = A>(onsuccess: (value: A) => B | Try<B>): Try<B>;
   catch<B = never>(onfailure: (reason: unknown) => B | Try<B>): Try<A | B>;
+  finally(onfinally?: (() => void) | undefined | null): Try<A>;
+
   unwrap(): A;
   result(): Result<A>;
 
   readonly [Symbol.toStringTag]: string;
 }
+
+new Promise(() => {}).finally;
 
 export class Success<A> implements ITry<A> {
   readonly ok = true;
@@ -35,6 +39,17 @@ export class Success<A> implements ITry<A> {
 
   catch<B = never>(onfailure: (reason: unknown) => B | Try<B>): Try<A | B> {
     return this as unknown as Try<A | B>;
+  }
+
+  finally(onfinally?: (() => void) | undefined | null): Try<A> {
+    if (!onfinally) return this;
+
+    try {
+      onfinally();
+      return this;
+    } catch (error) {
+      return new Failure(error);
+    }
   }
 
   unwrap(): A {
@@ -74,6 +89,17 @@ export class Failure<A> implements ITry<A> {
     }
   }
 
+  finally(onfinally?: (() => void) | undefined | null): Try<A> {
+    if (!onfinally) return this;
+
+    try {
+      onfinally();
+      return this;
+    } catch (error) {
+      return new Failure(error);
+    }
+  }
+
   unwrap(): A {
     throw this.error;
   }
@@ -96,6 +122,9 @@ export interface TryConstructor {
   isOk(value: unknown): value is Success<unknown>;
   isError(value: unknown): value is Failure<unknown>;
   isTry(value: unknown): value is Try<unknown>;
+
+  promise<A>(value: () => Promise<A>): Promise<A>;
+  promise<A>(value: () => A): Promise<A>;
 
   readonly [Symbol.toStringTag]: string;
 }
@@ -131,6 +160,19 @@ const TryImplementation: Omit<TryConstructor, never> = {
   },
   isTry(value: unknown): value is Try<unknown> {
     return value instanceof Success || value instanceof Failure;
+  },
+  promise<A>(value: () => A | Promise<A>): Promise<A> {
+    try {
+      const v = value();
+
+      if (Object.prototype.toString.call(v) === "[object Promise]") {
+        return v as Promise<A>;
+      } else {
+        return Promise.resolve(v);
+      }
+    } catch (error) {
+      return Promise.reject(error);
+    }
   },
 
   [Symbol.toStringTag]: "Try",
