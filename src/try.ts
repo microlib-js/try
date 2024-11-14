@@ -11,8 +11,6 @@ interface ITry<A> {
   readonly [Symbol.toStringTag]: string;
 }
 
-new Promise(() => {}).finally;
-
 export class Success<A> implements ITry<A> {
   readonly ok = true;
 
