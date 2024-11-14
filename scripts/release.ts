@@ -19,8 +19,6 @@ const { values, positionals } = parseArgs({
   allowPositionals: true,
 });
 
-console.log(positionals, values);
-
 const bump = positionals[2] ?? "patch";
 const workflowId = values.workflow ?? "release.yaml";
 const isDryRun = values.dry;
@@ -52,6 +50,10 @@ const { owner, repo } = await $`git config --get remote.origin.url`
     return { owner, repo };
   });
 
+if (isDryRun) {
+  console.log("== Dry run started ==\n");
+}
+
 console.log(`Repo: ${owner}/${repo}`);
 console.log(`Current Version: ${version}`);
 console.log(`Bump Type: ${bump}`);
@@ -64,6 +66,7 @@ const nextVersion = version
 console.log(`Next Version: ${nextVersion}`);
 
 if (isDryRun) {
+  console.log("\n== Dry run end ==");
   process.exit(0);
 }
 
