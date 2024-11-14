@@ -1,8 +1,10 @@
 interface ITry<A> {
   ok: boolean;
 
-  then<B = A>(onsuccess: (value: A) => B | Try<B>): Try<B>;
-  catch<B = never>(onfailure: (reason: unknown) => B | Try<B>): Try<A | B>;
+  then<B = A>(onsuccess: ((value: A) => B | Try<B>) | undefined | null): Try<B>;
+  catch<B = never>(
+    onfailure: ((reason: unknown) => B | Try<B>) | undefined | null
+  ): Try<A | B>;
   finally(onfinally?: (() => void) | undefined | null): Try<A>;
 
   unwrap(): A;
@@ -22,7 +24,13 @@ export class Success<A> implements ITry<A> {
     return "Try";
   }
 
-  then<B = A>(onsuccess: (value: A) => B | Try<B>): Try<B> {
+  then<B = A>(
+    onsuccess: ((value: A) => B | Try<B>) | undefined | null
+  ): Try<B> {
+    if (onsuccess === undefined || onsuccess === null) {
+      return this as unknown as Try<B>;
+    }
+
     try {
       const next = onsuccess(this.value);
       if (Try.isTry(next)) {
@@ -35,7 +43,9 @@ export class Success<A> implements ITry<A> {
     }
   }
 
-  catch<B = never>(onfailure: (reason: unknown) => B | Try<B>): Try<A | B> {
+  catch<B = never>(
+    onfailure: ((reason: unknown) => B | Try<B>) | undefined | null
+  ): Try<A | B> {
     return this as unknown as Try<A | B>;
   }
 
@@ -70,11 +80,19 @@ export class Failure<A> implements ITry<A> {
     return "Try";
   }
 
-  then<B = A>(onsuccess: (value: A) => B | Try<B>): Try<B> {
+  then<B = A>(
+    onsuccess: ((value: A) => B | Try<B>) | undefined | null
+  ): Try<B> {
     return this as unknown as Try<B>;
   }
 
-  catch<B = never>(onfailure: (reason: unknown) => B | Try<B>): Try<A | B> {
+  catch<B = never>(
+    onfailure: ((reason: unknown) => B | Try<B>) | undefined | null
+  ): Try<A | B> {
+    if (onfailure === undefined || onfailure === null) {
+      return this as unknown as Try<A | B>;
+    }
+
     try {
       const next = onfailure(this.error);
       if (Try.isTry(next)) {
