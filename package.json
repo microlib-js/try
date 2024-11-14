@@ -18,7 +18,7 @@
     "build": "unbuild",
     "bump": "bun scripts/bump.ts",
     "release": "bun scripts/release.ts",
-    "attw": "bunx @arethetypeswrong/cli --pack"
+    "attw": "bunx @arethetypeswrong/cli --pack --profile node16"
   },
   "devDependencies": {
     "@types/bun": "^1.1.11",
