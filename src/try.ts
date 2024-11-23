@@ -110,7 +110,10 @@ export type Try<A> = Success<A> | Failure<A>;
 export type Unwrapped<A> = A extends Try<infer B> ? Unwrapped<B> : A;
 
 export interface TryConstructor {
+  <A>(value: () => Promise<A>): Promise<A>;
   <A>(value: () => A): Try<A>;
+
+  new <A>(value: () => Promise<A>): Promise<A>;
   new <A>(value: () => A): Try<A>;
 
   apply<A>(value: () => A): Try<A>;
@@ -172,8 +175,8 @@ const TryImplementation: Omit<TryConstructor, never> = {
     try {
       const v = value();
 
-      if (Object.prototype.toString.call(v) === "[object Promise]") {
-        return v as Promise<A>;
+      if (isPromise(v)) {
+        return v;
       } else {
         return Promise.resolve(v);
       }
@@ -185,9 +188,18 @@ const TryImplementation: Omit<TryConstructor, never> = {
   [Symbol.toStringTag]: "Try",
 };
 
-export const Try = Object.assign(function <A>(value: () => A): Try<A> {
-  return TryImplementation.apply(value);
-}, TryImplementation) as TryConstructor;
+export const Try = Object.assign(function <A>(
+  value: () => A | Promise<A>
+): Try<A> | Promise<A> {
+  const v = TryImplementation.apply(value);
+
+  if (v.ok && isPromise(v.value)) {
+    return v.value;
+  } else {
+    return v as Try<A>;
+  }
+},
+TryImplementation) as TryConstructor;
 
 /* Result Types */
 type ResultOk<T> = {
@@ -201,3 +213,8 @@ type ResultError<E = unknown> = {
 };
 
 export type Result<T, E = unknown> = ResultOk<T> | ResultError<E>;
+
+/* Helper */
+function isPromise(value: unknown): value is Promise<unknown> {
+  return Object.prototype.toString.call(value) === "[object Promise]";
+}
