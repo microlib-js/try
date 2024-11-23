@@ -5,14 +5,14 @@ test("new Try()", () => {
   const t = new Try(() => true);
   expect(t.ok).toBe(true);
   expect(Try.isTry(t)).toBe(true);
-  expect(t.unwrap()).toBe(true);
+  expect(Try.unwrap(t)).toBe(true);
 });
 
 test("Try()", () => {
   const t = Try(() => true);
   expect(t.ok).toBe(true);
   expect(Try.isTry(t)).toBe(true);
-  expect(t.unwrap()).toBe(true);
+  expect(Try.unwrap(t)).toBe(true);
 });
 
 test("Try.success()", () => {
@@ -22,7 +22,7 @@ test("Try.success()", () => {
   expect(Try.isError(t)).toBe(false);
   expect(Try.isTry(t)).toBe(true);
   expect(t).toBeInstanceOf(Success);
-  expect(t.unwrap()).toBe("pass");
+  expect(Try.unwrap(t)).toBe("pass");
 });
 
 test("Try.failure()", () => {
@@ -32,5 +32,5 @@ test("Try.failure()", () => {
   expect(Try.isError(t)).toBe(true);
   expect(Try.isTry(t)).toBe(true);
   expect(t).toBeInstanceOf(Failure);
-  expect(() => t.unwrap()).toThrowError("fail");
+  expect(() => Try.unwrap(t)).toThrowError("fail");
 });

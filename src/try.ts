@@ -7,9 +7,6 @@ interface ITry<A> {
   ): Try<A | B>;
   finally(onfinally?: (() => void) | undefined | null): Try<A>;
 
-  unwrap(): A;
-  result(): Result<A>;
-
   readonly [Symbol.toStringTag]: string;
 }
 
@@ -59,14 +56,6 @@ export class Success<A> implements ITry<A> {
       return new Failure(error);
     }
   }
-
-  unwrap(): A {
-    return this.value;
-  }
-
-  result(): Result<A> {
-    return { ok: true, value: this.value };
-  }
 }
 
 export class Failure<A> implements ITry<A> {
@@ -115,14 +104,6 @@ export class Failure<A> implements ITry<A> {
       return new Failure(error);
     }
   }
-
-  unwrap(): A {
-    throw this.error;
-  }
-
-  result(): Result<A> {
-    return { ok: false, error: this.error };
-  }
 }
 
 export type Try<A> = Success<A> | Failure<A>;
@@ -135,6 +116,7 @@ export interface TryConstructor {
   apply<A>(value: () => A): Try<A>;
   success<A>(value: A | Try<A>): Try<Unwrapped<A>>;
   failure<A = never>(reason: unknown): Try<A>;
+  unwrap<A>(value: Try<A>): A;
   isOk(value: unknown): value is Success<unknown>;
   isError(value: unknown): value is Failure<unknown>;
   isTry(value: unknown): value is Try<unknown>;
@@ -156,17 +138,26 @@ const TryImplementation: Omit<TryConstructor, never> = {
   success<A>(value: A | Try<A>): Try<Unwrapped<A>> {
     if (TryImplementation.isTry(value)) {
       return TryImplementation.apply(
-        value.unwrap.bind(value)
-      ) as unknown as Try<Unwrapped<A>>;
+        () => TryImplementation.unwrap(value) as Unwrapped<A>
+      );
     }
     return new Success(value) as unknown as Try<Unwrapped<A>>;
   },
   failure<A = never>(reason: unknown): Try<A> {
     if (TryImplementation.isTry(reason)) {
-      return TryImplementation.apply(reason.unwrap.bind(reason) as () => A);
+      return TryImplementation.apply(
+        () => TryImplementation.unwrap(reason) as A
+      );
     }
 
     return new Failure(reason);
+  },
+  unwrap<A>(value: Try<A>): A {
+    if (TryImplementation.isOk(value)) {
+      return value.value;
+    } else {
+      throw value.error;
+    }
   },
   isOk(value: unknown): value is Success<unknown> {
     return value instanceof Success;
