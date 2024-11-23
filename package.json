@@ -1,6 +1,6 @@
 {
   "name": "@microlib/try",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "A Promise like quasi monad for Try.",
   "keywords": [
     "promise",
