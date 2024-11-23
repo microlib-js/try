@@ -32,10 +32,11 @@ function task() {
 
 const result = Try(task)
   .catch(() => "Bye")
-  .then((v) => v + ", World!")
-  .unwrap();
+  .then((v) => v + ", World!");
 
-console.log(result);
+if (result.ok) {
+  console.log(result.value);
+}
 
 /* 
 
