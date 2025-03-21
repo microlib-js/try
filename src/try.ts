@@ -1,24 +1,35 @@
-interface ITry<A> {
-  ok: boolean;
+abstract class TryOutcome<A> {
+  abstract readonly ok: boolean;
 
-  then<B = A>(onsuccess: ((value: A) => B | Try<B>) | undefined | null): Try<B>;
-  catch<B = never>(
+  abstract then<B = A>(
+    onsuccess: ((value: A) => B | Try<B>) | undefined | null
+  ): Try<B>;
+  abstract catch<B = never>(
     onfailure: ((reason: unknown) => B | Try<B>) | undefined | null
   ): Try<A | B>;
-  finally(onfinally?: (() => void) | undefined | null): Try<A>;
-
-  readonly [Symbol.toStringTag]: string;
-}
-
-export class Success<A> implements ITry<A> {
-  readonly ok = true;
-
-  constructor(readonly value: A) {
-    return this;
-  }
 
   get [Symbol.toStringTag]() {
     return "Try";
+  }
+
+  finally(onfinally?: (() => void) | undefined | null): Try<A> {
+    if (!onfinally) return this as unknown as Try<A>;
+
+    try {
+      onfinally();
+    } catch (_) {
+      // Ignore errors in finally, to match Promise.finally() behavior
+    }
+
+    return this as unknown as Try<A>;
+  }
+}
+
+export class Success<A> extends TryOutcome<A> {
+  readonly ok = true;
+
+  constructor(public readonly value: A) {
+    super();
   }
 
   then<B = A>(
@@ -43,30 +54,15 @@ export class Success<A> implements ITry<A> {
   catch<B = never>(
     onfailure: ((reason: unknown) => B | Try<B>) | undefined | null
   ): Try<A | B> {
-    return this as unknown as Try<A | B>;
-  }
-
-  finally(onfinally?: (() => void) | undefined | null): Try<A> {
-    if (!onfinally) return this;
-
-    try {
-      onfinally();
-      return this;
-    } catch (error) {
-      return new Failure(error);
-    }
+    return this;
   }
 }
 
-export class Failure<A> implements ITry<A> {
+export class Failure<A> extends TryOutcome<A> {
   readonly ok = false;
 
-  constructor(readonly error: unknown) {
-    return this;
-  }
-
-  get [Symbol.toStringTag]() {
-    return "Try";
+  constructor(public readonly error: unknown) {
+    super();
   }
 
   then<B = A>(
@@ -89,17 +85,6 @@ export class Failure<A> implements ITry<A> {
       } else {
         return new Success(next);
       }
-    } catch (error) {
-      return new Failure(error);
-    }
-  }
-
-  finally(onfinally?: (() => void) | undefined | null): Try<A> {
-    if (!onfinally) return this;
-
-    try {
-      onfinally();
-      return this;
     } catch (error) {
       return new Failure(error);
     }
@@ -135,7 +120,7 @@ const TryImplementation: Omit<TryConstructor, never> = {
     try {
       return new Success<A>(value());
     } catch (error) {
-      return new Failure<A>(error as A);
+      return new Failure<A>(error);
     }
   },
   success<A>(value: A | Try<A>): Try<Unwrapped<A>> {
@@ -144,15 +129,10 @@ const TryImplementation: Omit<TryConstructor, never> = {
         () => TryImplementation.unwrap(value) as Unwrapped<A>
       );
     }
+
     return new Success(value) as unknown as Try<Unwrapped<A>>;
   },
   failure<A = never>(reason: unknown): Try<A> {
-    if (TryImplementation.isTry(reason)) {
-      return TryImplementation.apply(
-        () => TryImplementation.unwrap(reason) as A
-      );
-    }
-
     return new Failure(reason);
   },
   unwrap<A>(value: Try<A>): A {
@@ -195,26 +175,14 @@ export const Try = Object.assign(function <A>(
 
   if (v.ok && isPromise(v.value)) {
     return v.value;
-  } else {
-    return v as Try<A>;
   }
+
+  return v as Try<A>;
 },
 TryImplementation) as TryConstructor;
 
-/* Result Types */
-type ResultOk<T> = {
-  ok: true;
-  value: T;
-};
+/* Helpers */
 
-type ResultError<E = unknown> = {
-  ok: false;
-  error: E;
-};
-
-export type Result<T, E = unknown> = ResultOk<T> | ResultError<E>;
-
-/* Helper */
 function isPromise(value: unknown): value is Promise<unknown> {
   return Object.prototype.toString.call(value) === "[object Promise]";
 }
