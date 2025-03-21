@@ -5,7 +5,7 @@
 [![Github Actions][github-actions-src]][github-actions-href]
 [![Bundlephobia][bundlephobia-src]][bundlephobia-href]
 
-A Promise like quasi monad but for Try.
+Try is a quasi monad that mimics the Promise API while handling synchronous and asynchronous code safely.
 
 ## 🚀 Installation
 
@@ -17,7 +17,14 @@ npm install @microlib/try
 bun add @microlib/try
 ```
 
+## 🔥 Features
+
+- Supports both synchronous and asynchronous execution.
+- Mimics the `Promise` API (`then`, `catch`, `finally`).
+
 ## 📖 Usage
+
+Synchronous Usage
 
 ```ts
 import { Try } from "@microlib/try";
@@ -30,6 +37,7 @@ function task() {
   }
 }
 
+// Try(task: syncfn) returns Success<T> | Failure (which is just like a Promise, but synchronous)
 const result = Try(task)
   .catch(() => "Bye")
   .then((v) => v + ", World!");
@@ -43,6 +51,34 @@ if (result.ok) {
 Output can be any of these:
 - Hello, World!
 - Bye, World!
+
+*/
+```
+
+Asynchronous Usage
+
+```ts
+import { Try } from "@microlib/try";
+
+async function task(): Promise<string> {
+  return new Promise((resolve, reject) =>
+    setTimeout(
+      () => (Math.random() > 0.5 ? resolve("Theo") : reject("Prime")),
+      100
+    )
+  );
+}
+
+// Try(task: asyncfn) returns a Promise
+await Try(task)
+  .then((v) => console.log(`${v} uses VSCode`))
+  .catch((e) => console.log("NeoVim FTW"));
+
+/* 
+
+Output can be any of these:
+- Theo uses VSCode
+- NeoVim FTW
 
 */
 ```
